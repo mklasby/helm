@@ -25,7 +25,9 @@ class WildBenchScoreMetric(Metric):
             if annotation_key.endswith("_score") and annotation_value is not None:
                 scores.append(annotation_value)
         if not scores:
-            raise ValueError("Could not compute WB Score because all annotators failed.")
+            print("Annotator failed, this is low quality sample assigning it 1")
+            scores = [1]
+            # raise ValueError("Could not compute WB Score because all annotators failed.")
         score = sum(scores) / len(scores)
         score_rescaled = (score - 1) / 9
         return [

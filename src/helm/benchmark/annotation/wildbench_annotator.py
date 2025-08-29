@@ -32,7 +32,7 @@ class WildBenchAnnotator(Annotator):
         model_output_text = request_state.result.completions[0].text
         if not model_output_text.strip():
             # Following https://github.com/allenai/WildBench/blob/d6b8dcaf377d173d031980f97c16e1a82618c03d/src/eval.py
-            hwarn(
+            print(
                 "WildBenchAnnotator skipped sending requests to annotator models "
                 "because the model response was empty"
             )
@@ -60,18 +60,18 @@ class WildBenchAnnotator(Annotator):
         )
 
         SHORT_NAME_TO_MODEL_INFO: Dict[str, AnnotatorModelInfo] = {
-            "gpt": AnnotatorModelInfo(
+            "gpt": AnnotatorModelInfo(  # just do gpt for now
                 model_name="openai/gpt-4o-2024-05-13",
                 model_deployment="openai/gpt-4o-2024-05-13",
             ),
-            "llama": AnnotatorModelInfo(
-                model_name="meta/llama-3.1-405b-instruct-turbo",
-                model_deployment="together/llama-3.1-405b-instruct-turbo",
-            ),
-            "claude": AnnotatorModelInfo(
-                model_name="anthropic/claude-3-5-sonnet-20241022",
-                model_deployment="anthropic/claude-3-5-sonnet-20241022",
-            ),
+            # "llama": AnnotatorModelInfo(
+            #     model_name="meta/llama-3.1-405b-instruct-turbo",
+            #     model_deployment="together/llama-3.1-405b-instruct-turbo",
+            # ),
+            # "claude": AnnotatorModelInfo(
+            #     model_name="anthropic/claude-3-5-sonnet-20241022",
+            #     model_deployment="anthropic/claude-3-5-sonnet-20241022",
+            # ),
         }
         annotations: Dict[str, Union[Optional[str], Optional[float]]] = {"prompt_text": annotator_prompt}
         for annotator_name, annotator_model_info in SHORT_NAME_TO_MODEL_INFO.items():
@@ -80,7 +80,7 @@ class WildBenchAnnotator(Annotator):
                 model_deployment=annotator_model_info.model_deployment,
                 prompt=annotator_prompt,
                 temperature=0.0,
-                max_tokens=2000,
+                max_tokens=4096,
             )
             strengths: Optional[str] = None
             weaknesses: Optional[str] = None
@@ -96,7 +96,7 @@ class WildBenchAnnotator(Annotator):
                 annotator_response_text = annotator_response.completions[0].text
                 annotator_response_parts = self._pattern.search(annotator_response_text)
                 if not annotator_response_parts:
-                    hwarn(
+                    print(
                         "WildBenchAnnotator got a malformed annotation from "
                         f"{annotator_model_info.model_name}: {annotator_response_text}"
                     )
@@ -107,7 +107,7 @@ class WildBenchAnnotator(Annotator):
                     try:
                         score = float(score_text)
                     except ValueError:
-                        hwarn(
+                        print(
                             "WildBenchAnnotator could not parse the score from the annotation from "
                             f"{annotator_model_info.model_name}: {annotator_response_text}"
                         )

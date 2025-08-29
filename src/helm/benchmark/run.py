@@ -376,6 +376,116 @@ def main():
     setup_default_logging(args.log_config)
     return helm_run(args)
 
+def create_helm_run_args(
+    # Required arguments
+    suite: str,
+
+    # Arguments from main()
+    conf_paths: List[str] = [],
+    run_entries: List[str] = [],
+    max_eval_instances: Optional[int] = None,
+    models_to_run: Optional[List[str]] = None,
+    groups_to_run: Optional[List[str]] = None,
+    priority: Optional[int] = None,
+    exit_on_error: bool = False,
+    skip_completed_runs: bool = False,
+    enable_huggingface_models: List[str] = [],
+    enable_local_huggingface_models: List[str] = [],
+    runner_class_name: Optional[str] = None,
+    log_config: Optional[str] = None,
+    run_specs: List[str] = [],  # Deprecated but included for completeness
+
+    # Arguments from add_run_args()
+    output_path: str = "benchmark_output",
+    num_threads: int = 4,
+    skip_instances: bool = False,
+    cache_instances: bool = False,
+    cache_instances_only: bool = False,
+    dry_run: bool = False,
+    num_train_trials: Optional[int] = None,
+    local_path: str = "prod_env",
+    mongo_uri: str = "",
+    disable_cache: bool = False,
+    
+    # Arguments from add_service_args()
+    server_url: Optional[str] = None,
+    api_key_path: str = "proxy_api_key.txt"
+
+) -> argparse.Namespace:
+    """
+    Creates a self-contained argparse.Namespace instance with parameters
+    corresponding to the CLI arguments for the helm-run script.
+
+    This utility is useful for programmatically invoking helm-run logic
+    without needing to construct and parse a command-line string.
+
+    Args:
+        max_eval_instances: Maximum number of instances to evaluate on (required).
+        suite: Name of the suite this run belongs to (required).
+        conf_paths: Paths to run spec configuration files.
+        run_entries: List of run entries to execute.
+        models_to_run: List of specific models to run.
+        groups_to_run: List of specific scenario groups to run.
+        priority: Run specs with priority less than or equal to this value.
+        exit_on_error: If true, exit immediately if a RunSpec fails.
+        skip_completed_runs: If true, skip RunSpecs that have already completed.
+        enable_huggingface_models: List of Hugging Face models to enable from the hub.
+        enable_local_huggingface_models: List of local Hugging Face models to enable.
+        runner_class_name: Full class name of the Runner to use.
+        log_config: Path to a YAML file for logging configuration.
+        run_specs: DEPRECATED list of run entries.
+        output_path: Path to save all outputs.
+        num_threads: Maximum number of threads for requests.
+        skip_instances: If true, skip instance creation.
+        cache_instances: If true, cache generated instances to disk.
+        cache_instances_only: If true, only generate and cache instances.
+        dry_run: If true, skip execution and only estimate usage.
+        num_train_trials: Number of trials for in-context example sampling.
+        local_path: Path for ServerService if running locally.
+        mongo_uri: URI for a MongoDB cache backend.
+        disable_cache: If true, disable the request-response cache.
+        server_url: The URL of a remote HELM service.
+        api_key_path: Path to a file containing the API key.
+
+    Returns:
+        An argparse.Namespace object populated with the provided arguments.
+    """
+    args = argparse.Namespace(
+        # Required
+        max_eval_instances=max_eval_instances,
+        suite=suite,
+        
+        # from main()
+        conf_paths=conf_paths,
+        models_to_run=models_to_run,
+        groups_to_run=groups_to_run,
+        exit_on_error=exit_on_error,
+        skip_completed_runs=skip_completed_runs,
+        priority=priority,
+        run_specs=run_specs,
+        run_entries=run_entries,
+        enable_huggingface_models=enable_huggingface_models,
+        enable_local_huggingface_models=enable_local_huggingface_models,
+        runner_class_name=runner_class_name,
+        log_config=log_config,
+        
+        # from add_run_args()
+        output_path=output_path,
+        num_threads=num_threads,
+        skip_instances=skip_instances,
+        cache_instances=cache_instances,
+        cache_instances_only=cache_instances_only,
+        dry_run=dry_run,
+        num_train_trials=num_train_trials,
+        local_path=local_path,
+        mongo_uri=mongo_uri,
+        disable_cache=disable_cache,
+        
+        # from add_service_args()
+        server_url=server_url,
+        api_key_path=api_key_path
+    )
+    return args
 
 if __name__ == "__main__":
     main()

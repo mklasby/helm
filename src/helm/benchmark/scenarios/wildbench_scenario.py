@@ -1,6 +1,7 @@
 import datasets
 import os
 from typing import List
+import logging
 
 from helm.benchmark.scenarios.scenario import (
     Scenario,
@@ -14,6 +15,8 @@ from helm.common.general import ensure_directory_exists
 SUBSETS = ["v2"]
 REFERENCE_MODELS = ["gpt-4-turbo-2024-04-09", "claude-3-haiku-20240307", "Llama-2-70b-chat-hf"]
 
+logger = logging.getLogger(__name__)
+
 
 class WildBenchScenario(Scenario):
     """WildBench: Benchmarking LLMs with Challenging Tasks from Real Users in the Wild
@@ -26,11 +29,17 @@ class WildBenchScenario(Scenario):
     description = "Benchmarking LLMs with Challenging Tasks from Real Users in the Wild"
     tags = ["instruction following"]
 
-    def __init__(self, subset: str, use_model_outputs: bool = False):
+    def __init__(self, subset: str, use_model_outputs: bool = False, creative_writing_only: bool = True):
         super().__init__()
         assert subset in SUBSETS, "Unknown subset: {}".format(subset)
         self.subset = subset
         self.use_model_outputs = use_model_outputs
+        self.creative_writing_only = creative_writing_only
+        if self.creative_writing_only:
+            logger.warning(
+                "WildBenchScenario is set to creative_writing_only=True, which will only return instances "
+                "with the primary tag 'Creative Writing'. This may result in fewer instances than expected."
+            )
 
     def get_instances(self, output_path: str) -> List[Instance]:
         # Get WildBench from HuggingFace
@@ -60,6 +69,8 @@ class WildBenchScenario(Scenario):
         # Read all instances
         instances: List[Instance] = []
         for idx, row in enumerate(dataset):
+            if self.creative_writing_only and row["primary_tag"] != "Creative Writing":
+                continue
             input = Input(
                 messages=[
                     {"role": message["role"], "content": message["content"]} for message in row["conversation_input"]

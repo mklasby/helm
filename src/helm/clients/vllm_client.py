@@ -49,6 +49,10 @@ class VLLMClient(OpenAILegacyCompletionsClient):
         return raw_request
 
 
+    def _get_model_for_request(self, request: Request) -> str:
+        return request.model
+
+
 class VLLMChatClient(OpenAIClient):
     """Sends request to a vLLM server using the OpenAI-compatible API.
 
@@ -78,3 +82,6 @@ class VLLMChatClient(OpenAIClient):
         self.tokenizer = tokenizer
         self.tokenizer_name = tokenizer_name
         self.vllm_model_name = vllm_model_name
+
+    def _get_model_for_request(self, request: Request) -> str:
+        return request.model

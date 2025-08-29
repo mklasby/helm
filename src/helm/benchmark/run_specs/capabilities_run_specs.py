@@ -225,8 +225,11 @@ def get_wildbench_spec(subset: str) -> RunSpec:
         },
     )
 
+    # adapter_spec = AdapterSpec(
+    #     method=ADAPT_CHAT, input_prefix="", output_prefix="", max_tokens=2000, num_outputs=1, temperature=0.0
+    # )
     adapter_spec = AdapterSpec(
-        method=ADAPT_CHAT, input_prefix="", output_prefix="", max_tokens=2000, num_outputs=1, temperature=0.0
+        method=ADAPT_CHAT, input_prefix="", output_prefix="", max_tokens=16384, num_outputs=1, temperature=0.0
     )
     annotator_specs = [AnnotatorSpec(class_name="helm.benchmark.annotation.wildbench_annotator.WildBenchAnnotator")]
     metric_specs = get_basic_metric_specs([]) + [
